@@ -9,12 +9,18 @@
  * Author URI: https://www.ibexmercado.com/
  */
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) return;
+
 add_action('plugins_loaded', 'init_ibexpay_woocommerce');
 
 function init_ibexpay_woocommerce() {
     if (!class_exists('WC_Payment_Gateway')) {
         return;
-    };
+    }
 
     class WC_Ibexpay_Woocommerce extends WC_Payment_Gateway {
         public function __construct() {
@@ -70,8 +76,11 @@ function init_ibexpay_woocommerce() {
         public function process_payment($order_id) {
             $order = wc_get_order($order_id);
             $order_items = $order->get_items();
+            $ibexpay_order_id = get_post_meta($order->get_id(), 'ibexpay_order_id', true);
+
             $callback = trailingslashit(get_bloginfo('wpurl')) . '?wc-api=wc_ibexpay_woocommerce';
             $success = add_query_arg('order', $order->get_id(), add_query_arg('key', $order->get_order_key(), $this->get_return_url($order)));
+
             $description = '';
 
             foreach($order_items as $item_id => $item) {
@@ -81,15 +90,42 @@ function init_ibexpay_woocommerce() {
 
             $description = substr($description, 0, -2);
 
-            $ibexpay_order = 'order123';
-            $redirect = 'https://ibexpay.ibexmercado.com/checkout/' . $ibexpay_order;
+            if (empty($ibexpay_order_id)) {
+                $payload = json_encode(
+                    array(
+                        'description' => $description,
+                        'amount' => floatval($order->get_total()),
+                        'orderId' => (string) $order->get_id(),
+                        'callbackUrl' => $callback,
+                        'successUrl' => $success
+                    )
+                );
 
-            WC()->cart->empty_cart();
+                $ch = curl_init('http://localhost:3033/ecommerce/' . $this->button_id . '/checkout');
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                $result = curl_exec($ch);
+                $response = json_decode($result, true);
+                $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
 
-            return array(
-                'result'   => 'success',
-                'redirect' => $redirect,
-            );
+                if ($code != 200) return;
+
+                $ibexpay_order_id = $response['urlEndpoint'];
+                update_post_meta($order_id, 'ibexpay_order_id', $ibexpay_order_id);
+
+                return array(
+                    'result' => 'success',
+                    'redirect' => 'http://localhost:3000/checkout/' . $ibexpay_order_id,
+                );
+            }
+            else {
+                return array(
+                    'result' => 'success',
+                    'redirect' => 'http://localhost:3000/checkout/' . $ibexpay_order_id,
+                );
+            }
         }
     }
 
