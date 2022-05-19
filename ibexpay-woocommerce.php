@@ -22,9 +22,9 @@ function init_ibexpay_woocommerce() {
         return;
     }
 
-    class WC_Ibexpay_Woocommerce extends WC_Payment_Gateway {
+    class WC_Gateway_Ibexpay extends WC_Payment_Gateway {
         public function __construct() {
-            $this->id = 'ibexpay_woocommerce';
+            $this->id = 'ibexpay';
             $this->has_fields = false;
             $this->method_title = 'IBEXPay WooCommerce';
             $this->method_description = 'The easiest and fastest way for any business to receive instant Bitcoin payments via the Lightning Network.';
@@ -38,6 +38,7 @@ function init_ibexpay_woocommerce() {
             $this->button_id = $this->get_option('button_id');
 
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+            add_action('woocommerce_api_wc_gateway_ibexpay', array($this, 'payment_callback'));
         }
 
         public function init_form_fields() {
@@ -78,7 +79,7 @@ function init_ibexpay_woocommerce() {
             $order_items = $order->get_items();
             $ibexpay_order_id = get_post_meta($order->get_id(), 'ibexpay_order_id', true);
 
-            $callback = trailingslashit(get_bloginfo('wpurl')) . '?wc-api=wc_ibexpay_woocommerce';
+            $callback = trailingslashit(get_bloginfo('wpurl')) . '?wc-api=wc_gateway_ibexpay';
             $success = add_query_arg('order', $order->get_id(), add_query_arg('key', $order->get_order_key(), $this->get_return_url($order)));
 
             $description = '';
@@ -117,20 +118,57 @@ function init_ibexpay_woocommerce() {
 
                 return array(
                     'result' => 'success',
-                    'redirect' => 'http://localhost:3000/checkout/' . $ibexpay_order_id,
+                    'redirect' => 'http://localhost:3000/ecommerce/checkout/' . $ibexpay_order_id,
                 );
             }
             else {
                 return array(
                     'result' => 'success',
-                    'redirect' => 'http://localhost:3000/checkout/' . $ibexpay_order_id,
+                    'redirect' => 'http://localhost:3000/ecommerce/checkout/' . $ibexpay_order_id,
                 );
+            }
+        }
+
+        public function payment_callback() {
+            try {
+                $body = file_get_contents('php://input');
+                $request = json_decode($body, true);
+
+                $order = wc_get_order($request['orderId']);
+                if (empty($order)) {
+                    throw new Exception('Order #' . $request['orderId'] . ' does not exists');
+                }
+
+                $ibexpay_order_id = get_post_meta($order->get_id(), 'ibexpay_order_id', true);
+                if (empty($ibexpay_order_id) ) {
+                    throw new Exception('Order is not from IBEXPay');
+                }
+
+                if (strcmp(hash_hmac('sha256', $ibexpay_order_id, $this->button_id), $request['orderHash']) != 0) {
+                    throw new Exception('Request is not signed with the same key');
+                }
+
+                $previous_status = "wc-" . $order->get_status();
+                $order->add_order_note(__('Successful payment credited to your IBEXPay account', 'ibexpay'));
+                $order->payment_complete();
+
+                if ($order->get_status() === 'processing' && ($previous_status === 'wc-expired' || $previous_status === 'wc-canceled')) {
+                    WC()->mailer()->emails['WC_Email_Customer_Processing_Order']->trigger($order->get_id());
+                }
+
+                if (($order->get_status() === 'processing' || $order->get_status() == 'completed') && ($previous_status === 'wc-expired' || $previous_status === 'wc-canceled')) {
+                    WC()->mailer()->emails['WC_Email_New_Order']->trigger($order->get_id());
+                }
+
+                throw new Exception('Ok');
+            } catch (Exception $e) {
+                die($e->getMessage());
             }
         }
     }
 
     function add_ibexpay_woocommerce($methods) {
-        $methods[] = 'WC_Ibexpay_Woocommerce';
+        $methods[] = 'WC_Gateway_Ibexpay';
         return $methods;
     }
 
