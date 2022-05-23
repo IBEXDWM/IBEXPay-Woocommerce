@@ -172,5 +172,35 @@ function init_ibexpay_woocommerce() {
         return $methods;
     }
 
+    function ibexpay_custom_button($button) {
+        $targeted_payments_methods = array('ibexpay');
+        $chosen_payment_method = WC()->session->get('chosen_payment_method');
+
+        if(in_array($chosen_payment_method, $targeted_payments_methods) && ! is_wc_endpoint_url()) {
+            $button = '
+                <style>.ibex-button{ display: flex; align-items: center; justify-content: center; width: 100%; font-size: 1.41575em; background-color: #0d1c80; color: #ffffff; border-radius: 10px; } .ibex-button:hover{ background-color: #000367; color: #ffffff; } .ibex-image{ width: 1.41575em; margin-right: 10px; }</style>
+                <button type="submit" class="ibex-button" name="woocommerce_checkout_place_order" id="place_order"><img src="' . plugins_url('/assets/ibex-logo.png', __FILE__) . '" class="ibex-image" /><span>Pay with Bitcoin</span></button>
+            ';
+        }
+
+        return $button;
+    }
+
+    function custom_checkout_jquery_script() {
+        if (is_checkout() && ! is_wc_endpoint_url()) {
+            ?>
+                <script type="text/javascript">
+                jQuery( function($){
+                    $('form.checkout').on('change', 'input[name="payment_method"]', function(){
+                        $(document.body).trigger('update_checkout');
+                    });
+                });
+                </script>
+            <?php
+        }
+    }
+
     add_filter('woocommerce_payment_gateways', 'add_ibexpay_woocommerce');
+    add_filter('woocommerce_order_button_html', 'ibexpay_custom_button');
+    add_action('wp_footer', 'custom_checkout_jquery_script');
 }
