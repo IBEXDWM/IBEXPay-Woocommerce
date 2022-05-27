@@ -113,7 +113,7 @@ function init_ibexpay_woocommerce() {
 
                 if ($code != 200) return;
 
-                $ibexpay_order_id = $response['urlEndpoint'];
+                $ibexpay_order_id = $response['id'];
                 update_post_meta($order_id, 'ibexpay_order_id', $ibexpay_order_id);
 
                 return array(
@@ -159,8 +159,6 @@ function init_ibexpay_woocommerce() {
                 if (($order->get_status() === 'processing' || $order->get_status() == 'completed') && ($previous_status === 'wc-expired' || $previous_status === 'wc-canceled')) {
                     WC()->mailer()->emails['WC_Email_New_Order']->trigger($order->get_id());
                 }
-
-                throw new Exception('Ok');
             } catch (Exception $e) {
                 die($e->getMessage());
             }
