@@ -75,7 +75,6 @@ function init_ibexpay_woocommerce() {
         }
 
         public function process_payment($order_id) {
-            error_log('START');
             $order = wc_get_order($order_id);
             $order_items = $order->get_items();
             $ibexpay_order_id = get_post_meta($order->get_id(), 'ibexpay_order_id', true);
@@ -106,11 +105,10 @@ function init_ibexpay_woocommerce() {
                 );
 
                 $ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.A.B.C Safari/525.13';
-                $url = 'http://localhost:3033/ecommerce/' . $this->button_id . '/checkout';
+                $url = 'https://ibexpay-api.ibexmercado.com:8080/ecommerce/' . $this->button_id . '/checkout';
 
                 $ch = curl_init();
                 curl_setopt($ch,CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_HEADER, true);
                 curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_USERAGENT, $ua);
@@ -131,13 +129,13 @@ function init_ibexpay_woocommerce() {
 
                 return array(
                     'result' => 'success',
-                    'redirect' => 'http://localhost:3000/ecommerce/checkout/' . $ibexpay_order_id,
+                    'redirect' => 'https://ibexpay.ibexmercado.com/ecommerce/checkout/' . $ibexpay_order_id,
                 );
             }
             else {
                 return array(
                     'result' => 'success',
-                    'redirect' => 'http://localhost:3000/ecommerce/checkout/' . $ibexpay_order_id,
+                    'redirect' => 'https://ibexpay.ibexmercado.com/ecommerce/checkout/' . $ibexpay_order_id,
                 );
             }
         }
