@@ -79,7 +79,7 @@ function init_ibexpay_woocommerce() {
             $order_items = $order->get_items();
             $ibexpay_order_id = get_post_meta($order->get_id(), 'ibexpay_order_id', true);
 
-            $callback = trailingslashit(get_bloginfo('wpurl')) . '?wc-api=wc_gateway_ibexpay';
+            $webhook = trailingslashit(get_bloginfo('wpurl')) . '?wc-api=wc_gateway_ibexpay';
             $goback = trailingslashit(get_bloginfo('wpurl'));
             $success = add_query_arg('order', $order->get_id(), add_query_arg('key', $order->get_order_key(), $this->get_return_url($order)));
 
@@ -98,7 +98,7 @@ function init_ibexpay_woocommerce() {
                         'description' => $description,
                         'amount' => floatval($order->get_total()),
                         'orderId' => (string) $order->get_id(),
-                        'callbackUrl' => $callback,
+                        'webhookUrl' => $webhook,
                         'successUrl' => $success,
                         'gobackUrl' => $goback
                     )
