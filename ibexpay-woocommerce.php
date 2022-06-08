@@ -77,55 +77,59 @@ function init_ibexpay_woocommerce() {
         public function process_payment($order_id) {
             $order = wc_get_order($order_id);
             $order_items = $order->get_items();
-            $ibexpay_order_id = get_post_meta($order->get_id(), 'ibexpay_order_id', true);
-
             $webhook = trailingslashit(get_bloginfo('wpurl')) . '?wc-api=wc_gateway_ibexpay';
             $goback = trailingslashit(get_bloginfo('wpurl'));
             $success = add_query_arg('order', $order->get_id(), add_query_arg('key', $order->get_order_key(), $this->get_return_url($order)));
-
+            $secret = wp_generate_uuid4();
             $description = '';
 
             foreach($order_items as $item_id => $item) {
                 $item_data = $item->get_data();
                 $description .= $item_data['name'] . ' (X' . $item_data['quantity'] . '), ';
             }
-
             $description = substr($description, 0, -2);
 
+            $ibexpay_order_id = get_post_meta($order->get_id(), 'ibexpay_order_id', true);
+
             if (empty($ibexpay_order_id)) {
+                $url = 'https://ibexpay-api.ibexmercado.com:8080/ecommerce/' . $this->button_id . '/checkout';
+
                 $payload = json_encode(
                     array(
                         'description' => $description,
                         'amount' => floatval($order->get_total()),
                         'orderId' => (string) $order->get_id(),
                         'webhookUrl' => $webhook,
+                        'webhookSecret' => $secret,
                         'successUrl' => $success,
                         'gobackUrl' => $goback
                     )
                 );
 
-                $ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.A.B.C Safari/525.13';
-                $url = 'https://ibexpay-api.ibexmercado.com:8080/ecommerce/' . $this->button_id . '/checkout';
+                $args = array(
+                    'method' => 'POST',
+                    'body' => $payload,
+                    'timeout' => 45,
+                    'redirection' => '5',
+                    'httpversion' => '1.0',
+                    'blocking' => true,
+                    'headers'  => array(
+                        'Content-type: application/json'
+                    ),
+                    'data_format' => 'body',
+                    'cookies' => array(),
+                );
 
-                $ch = curl_init();
-                curl_setopt($ch,CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_USERAGENT, $ua);
-                curl_setopt($ch, CURLOPT_AUTOREFERER, true);
-                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-                curl_setopt($ch, CURLOPT_MAXREDIRS, 20);
-                curl_setopt($ch,CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-                $result = curl_exec($ch);
-                $response = json_decode($result, true);
-                $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
+                $response = wp_remote_post($url, $args);
+                $http_code = wp_remote_retrieve_response_code($response);
+                $body = wp_remote_retrieve_body($response);
+                $json = json_decode($body, true);
 
-                if ($code != 200) return;
+                if ($http_code != 200) return;
 
-                $ibexpay_order_id = $response['id'];
+                $ibexpay_order_id = $json['id'];
                 update_post_meta($order_id, 'ibexpay_order_id', $ibexpay_order_id);
+                update_post_meta($order_id, 'ibexpay_secret', $secret);
 
                 return array(
                     'result' => 'success',
@@ -144,6 +148,7 @@ function init_ibexpay_woocommerce() {
             try {
                 $body = file_get_contents('php://input');
                 $request = json_decode($body, true);
+                error_log(print_r($request, true));
 
                 $order = wc_get_order($request['orderId']);
                 if (empty($order)) {
@@ -151,11 +156,12 @@ function init_ibexpay_woocommerce() {
                 }
 
                 $ibexpay_order_id = get_post_meta($order->get_id(), 'ibexpay_order_id', true);
-                if (empty($ibexpay_order_id) ) {
+                if (empty($ibexpay_order_id)) {
                     throw new Exception('Order is not from IBEXPay');
                 }
 
-                if (strcmp(hash_hmac('sha256', $ibexpay_order_id, $this->button_id), $request['orderHash']) != 0) {
+                $ibexpay_secret = get_post_meta($order->get_id(), 'ibexpay_secret', true);
+                if (strcmp($ibexpay_secret, $request['secret']) != 0) {
                     throw new Exception('Request is not signed with the same key');
                 }
 

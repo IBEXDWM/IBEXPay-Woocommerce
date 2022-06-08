@@ -3,7 +3,8 @@ Contributors: IBEXMercado
 Donate link: https://www.ibexmercado.com/
 Tags: ibex, ibexmercado, bitcoin, lightning, lightning network, accept bitcoin, accept lightning, instant bitcoin, bitcoin processor, bitcoin gateway, payment gateway, payment module, bitcoin module, bitcoin woocommerce, btc
 Requires at least: 4.0
-Tested up to: 5.9.0
+Tested up to: 6.0
+Stable tag: 1.0.0
 Requires PHP: 7.0
 License: GPLv2
 License URI: https://raw.githubusercontent.com/IBEXDWM/IBEXPay-Woocommerce/master/LICENSE
