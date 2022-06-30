@@ -4,8 +4,8 @@
  * Plugin Name: IBEXPay Payment Gateway
  * Plugin URI: https://www.ibexmercado.com/ibex-pay
  * Description: The easiest and fastest way for any business to receive instant Bitcoin payments via the Lightning Network.
- * Version: 1.0.2
- * Author: IBEXMercado
+ * Version: 1.0.3
+ * Author: IBEX
  * Author URI: https://www.ibexmercado.com/
  */
 
@@ -66,9 +66,9 @@ function init_ibexpay_woocommerce() {
                 ),
 
                 'button_id' => array(
-                    'title' => __('Button ID', 'woocommerce'),
+                    'title' => __('vBPT ID', 'woocommerce'),
                     'type' => 'text',
-                    'description' => __('Button ID from IBEXPay', 'woocommerce'),
+                    'description' => __('vBPT ID from IBEXPay', 'woocommerce'),
                     'default' => __('')
                 ),
             );
