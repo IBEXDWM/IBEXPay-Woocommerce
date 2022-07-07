@@ -1,5 +1,5 @@
-=== IBEXPay Payment Gateway ===
-Contributors: IBEXMercado
+=== IBEXPay Woocommerce Payment Gateway ===
+Contributors: IBEX
 Donate link: https://www.ibexmercado.com/
 Tags: ibex, ibexmercado, bitcoin, lightning, lightning network, accept bitcoin, accept lightning, instant bitcoin, bitcoin processor, bitcoin gateway, payment gateway, payment module, bitcoin module, bitcoin woocommerce, btc
 Requires at least: 4.0
@@ -9,15 +9,32 @@ Requires PHP: 7.0
 License: GPLv2
 License URI: https://raw.githubusercontent.com/IBEXDWM/IBEXPay-Woocommerce/master/LICENSE
 
+The easiest and fastest way for any business to receive Bitcoin payments.
+
 == Description ==
 
-The easiest and fastest way for any business to receive Bitcoin payments.
+Accept Bitcoin payments from anywhere in the world.
+
+With the IBEXPay Woocommerce Payment Gateway you can accept Bitcoin payments either Lightning or On-chain easily and directly in your store.
+Without having to worry about Bitcoin exchange price.
+
+IBEXPay allows you to take payments in more than 20 countries and using currencies like:
+
+* United States Dollar.
+* Guatemalan Quetzal.
+* Euros.
+* Mexican Peso.
+* Argentine Peso.
+* Colombian Peso.
+
+And many more.
 
 == Features ==
 
 * Payment amount is calculated using real-time exchange rates.
 * Instant Bitcoin payments.
 * Use Lightning or Onchain.
+* More than 20 countries and 10 currencies supported.
 
 == Installation ==
 
