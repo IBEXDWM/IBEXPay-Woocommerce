@@ -1,5 +1,5 @@
 === IBEXPay Woocommerce Payment Gateway ===
-Contributors: IBEX
+Contributors: ibexmercado
 Donate link: https://www.ibexmercado.com/
 Tags: ibex, ibexmercado, bitcoin, lightning, lightning network, accept bitcoin, accept lightning, instant bitcoin, bitcoin processor, bitcoin gateway, payment gateway, payment module, bitcoin module, bitcoin woocommerce, btc
 Requires at least: 4.0
