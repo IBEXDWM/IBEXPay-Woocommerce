@@ -92,10 +92,8 @@ function init_ibexpay_woocommerce() {
             $ibexpay_order_id = get_post_meta($order->get_id(), 'ibexpay_order_id', true);
 
             if (empty($ibexpay_order_id)) {
-                error_log('setting url');
                 $url = 'https://ibexpay-api.ibexmercado.com/ecommerce/' . $this->button_id . '/checkout';
 
-                error_log('encoding json');
                 $payload = json_encode(
                     array(
                         'description' => $description,
@@ -122,24 +120,17 @@ function init_ibexpay_woocommerce() {
                     'cookies' => array(),
                 );
 
-                error_log('making call');
                 $response = wp_remote_post($url, $args);
-                error_log('get http code');
                 $http_code = wp_remote_retrieve_response_code($response);
-                error_log('get http body');
                 $body = wp_remote_retrieve_body($response);
-                error_log('get parse body');
                 $json = json_decode($body, true);
 
                 if ($http_code != 200) return;
-                error_log('code is 200');
 
-                error_log('save id');
                 $ibexpay_order_id = $json['id'];
                 update_post_meta($order_id, 'ibexpay_order_id', $ibexpay_order_id);
                 update_post_meta($order_id, 'ibexpay_secret', $secret);
 
-                error_log('redirect');
                 return array(
                     'result' => 'success',
                     'redirect' => 'https://ibexpay.ibexmercado.com/ecommerce/checkout/' . $ibexpay_order_id,
