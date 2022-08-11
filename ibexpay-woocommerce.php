@@ -62,7 +62,7 @@ function init_ibexpay_woocommerce() {
                     'title' => __('Description', 'woocommerce'),
                     'type' => 'textarea',
                     'description' => __('The payment method description which a customer sees at the checkout of your store.', 'woocommerce'),
-                    'default' => __('Pay with Bitcoin Onchain or over the Lightning Network. Powered by IBEX')
+                    'default' => __('Pay with Bitcoin On-chain or over the Lightning Network. Powered by IBEX')
                 ),
 
                 'button_id' => array(

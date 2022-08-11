@@ -33,7 +33,7 @@ And many more.
 
 * Payment amount is calculated using real-time exchange rates.
 * Instant Bitcoin payments.
-* Use Lightning or Onchain.
+* Use Lightning or On-chain.
 * More than 20 countries and 10 currencies supported.
 
 == Installation ==
