@@ -193,8 +193,8 @@ function init_ibexpay_woocommerce() {
 
         if(in_array($chosen_payment_method, $targeted_payments_methods) && ! is_wc_endpoint_url()) {
             $button = '
-                <style>.ibex-button{ display: flex; align-items: center; justify-content: center; width: 100%; font-size: 1.41575em; background-color: #ffffff; color: #f4911a; border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px; } .ibex-button:hover{ background-color: #fefefe; color: #f4911a; } .ibex-image{ width: 1.41575em; margin-right: 10px; } .ibex-bold{ font-weight: bolder; }</style>
-                <button type="submit" class="ibex-button" name="woocommerce_checkout_place_order" id="place_order"><img src="' . plugins_url('/assets/ibex-logo.png', __FILE__) . '" class="ibex-image" /><span>Pay with <b class="ibex-bold">bitcoin</b></span></button>
+                <style>.ibex-button{ display: flex; align-items: center; justify-content: center; width: 100%; font-size: 1.41575em; background-color: #ffffff; color: #f4911a; border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px; font-weight: 300; } .ibex-button:hover{ background-color: #fefefe; color: #f4911a; } .ibex-image{ width: 2.0em; margin-right: 10px; } .ibex-bold{ font-weight: 600; font-style: italic; }</style>
+                <button type="submit" class="ibex-button" name="woocommerce_checkout_place_order" id="place_order"><img src="' . plugins_url('/assets/ibex-logo.png', __FILE__) . '" class="ibex-image" /><span>Pay with <span class="ibex-bold">bitcoin</span></span></button>
             ';
         }
 
