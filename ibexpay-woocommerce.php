@@ -4,7 +4,7 @@
  * Plugin Name: IBEXPay Woocommerce Payment Gateway
  * Plugin URI: https://www.ibexmercado.com/ibex-pay
  * Description: The easiest and fastest way for any business to receive Bitcoin payments.
- * Version: 1.0.6
+ * Version: 1.0.7
  * Author: IBEX
  * Author URI: https://www.ibexmercado.com/
  */
@@ -148,7 +148,6 @@ function init_ibexpay_woocommerce() {
             try {
                 $body = file_get_contents('php://input');
                 $request = json_decode($body, true);
-                error_log(print_r($request, true));
 
                 $order = wc_get_order($request['orderId']);
                 if (empty($order)) {
@@ -165,8 +164,10 @@ function init_ibexpay_woocommerce() {
                     throw new Exception('Request is not signed with the same key');
                 }
 
+                update_post_meta($order->get_id(), 'ibexpay_transaction_id', $request['transactionId']);
+
                 $previous_status = "wc-" . $order->get_status();
-                $order->add_order_note(__('Successful payment credited to your IBEXPay account', 'ibexpay'));
+                $order->add_order_note(__('Successful payment via ' . $request['paymentMethod'] . ' credited to your IBEXPay account at ' . $request['transaction']['settledAtUtc'], 'ibexpay'));
                 $order->payment_complete();
 
                 if ($order->get_status() === 'processing' && ($previous_status === 'wc-expired' || $previous_status === 'wc-canceled')) {
