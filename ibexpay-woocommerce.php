@@ -4,7 +4,7 @@
  * Plugin Name: IBEXPay Woocommerce Payment Gateway
  * Plugin URI: https://www.ibexmercado.com/ibex-pay
  * Description: The easiest and fastest way for any business to receive Bitcoin payments.
- * Version: 1.0.7
+ * Version: 1.1.0
  * Author: IBEX
  * Author URI: https://www.ibexmercado.com/
  */
