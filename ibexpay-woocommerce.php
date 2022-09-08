@@ -102,7 +102,8 @@ function init_ibexpay_woocommerce() {
                         'webhookUrl' => $webhook,
                         'webhookSecret' => $secret,
                         'successUrl' => $success,
-                        'gobackUrl' => $goback
+                        'gobackUrl' => $goback,
+                        'notifyAll' => true
                     )
                 );
 
@@ -166,17 +167,22 @@ function init_ibexpay_woocommerce() {
 
                 update_post_meta($order->get_id(), 'ibexpay_transaction_id', $request['transactionId']);
 
-                $previous_status = "wc-" . $order->get_status();
-                $order->add_order_note(__('Successful payment via ' . $request['paymentMethod'] . ' credited to your IBEXPay account at ' . $request['transaction']['settledAtUtc'], 'ibexpay'));
-                $order->payment_complete();
+                if (strcmp('SETTLED', $request['status']) == 0) {
+                    $previous_status = "wc-" . $order->get_status();
+                    $order->add_order_note(__('Successful payment via ' . $request['paymentMethod'] . ' credited to your IBEXPay account at ' . $request['transaction']['settledAtUtc'], 'ibexpay'));
+                    $order->payment_complete();
 
-                if ($order->get_status() === 'processing' && ($previous_status === 'wc-expired' || $previous_status === 'wc-canceled')) {
-                    WC()->mailer()->emails['WC_Email_Customer_Processing_Order']->trigger($order->get_id());
+                    if ($order->get_status() === 'processing' && ($previous_status === 'wc-expired' || $previous_status === 'wc-canceled')) {
+                        WC()->mailer()->emails['WC_Email_Customer_Processing_Order']->trigger($order->get_id());
+                    }
+
+                    if (($order->get_status() === 'processing' || $order->get_status() == 'completed') && ($previous_status === 'wc-expired' || $previous_status === 'wc-canceled')) {
+                        WC()->mailer()->emails['WC_Email_New_Order']->trigger($order->get_id());
+                    }
+                } else if (strcmp('UPDATE', $request['status'] == 0)) {
+                    $order->add_order_note(__('A new payment confirmation arrived via ' . $request['paymentMethod'] . ' The transaction is not fulfilled yet, there are ' . $request['transactionOnchainAmount']['confirmedSats'] . ' confirmed SATS and ' . $request['transactionOnchainAmount']['unconfirmedSats'] . ' unconfirmed SATS the transaction requires ' . $request['transactionOnchainAmount']['requiredSats'] . ' SATS to be confirmed'));
                 }
 
-                if (($order->get_status() === 'processing' || $order->get_status() == 'completed') && ($previous_status === 'wc-expired' || $previous_status === 'wc-canceled')) {
-                    WC()->mailer()->emails['WC_Email_New_Order']->trigger($order->get_id());
-                }
             } catch (Exception $e) {
                 die($e->getMessage());
             }
