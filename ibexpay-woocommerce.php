@@ -172,14 +172,20 @@ function init_ibexpay_woocommerce() {
                     $order->add_order_note(__('Successful payment via ' . $request['paymentMethod'] . ' credited to your IBEXPay account at ' . $request['transaction']['settledAtUtc'], 'ibexpay'));
                     $order->payment_complete();
 
-                    if ($order->get_status() === 'processing' && ($previous_status === 'wc-expired' || $previous_status === 'wc-canceled')) {
+                    if ($order->get_status() === 'processing' && ($previous_status === 'wc-expired' || $previous_status === 'wc-canceled' || $previous_status === 'wc-on-hold')) {
                         WC()->mailer()->emails['WC_Email_Customer_Processing_Order']->trigger($order->get_id());
                     }
 
-                    if (($order->get_status() === 'processing' || $order->get_status() == 'completed') && ($previous_status === 'wc-expired' || $previous_status === 'wc-canceled')) {
+                    if (($order->get_status() === 'processing' || $order->get_status() == 'completed') && ($previous_status === 'wc-expired' || $previous_status === 'wc-canceled' || $previous_status === 'wc-on-hold')) {
                         WC()->mailer()->emails['WC_Email_New_Order']->trigger($order->get_id());
                     }
                 } else if (strcmp('UPDATE', $request['status']) == 0) {
+                    $previous_status = "wc-" . $order->get_status();
+                    if ($previous_status != 'wc-on-hold') {
+                        $order->update_status('on-hold');
+                        $order->add_order_note(__('There is an underpayment. The order will be on hold until payment is fulfilled'));
+                    }
+
                     $order->add_order_note(__('A new payment confirmation arrived via ' . $request['paymentMethod'] . ' The transaction is not fulfilled yet, there are ' . $request['transactionOnchainAmount']['confirmedSats'] . ' confirmed SATS and ' . $request['transactionOnchainAmount']['unconfirmedSats'] . ' unconfirmed SATS the transaction requires ' . $request['transactionOnchainAmount']['requiredSats'] . ' SATS to be confirmed'));
                 }
 
