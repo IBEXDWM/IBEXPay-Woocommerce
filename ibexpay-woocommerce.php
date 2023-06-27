@@ -94,6 +94,8 @@ function init_ibexpay_woocommerce() {
             if (empty($ibexpay_order_id)) {
                 $url = 'https://ibexpay-api.ibexmercado.com/ecommerce/' . $this->button_id . '/checkout';
 
+                $headers = array('Content-Type' => 'application/json');
+
                 $payload = json_encode(
                     array(
                         'description' => $description,
@@ -104,21 +106,17 @@ function init_ibexpay_woocommerce() {
                         'successUrl' => $success,
                         'gobackUrl' => $goback,
                         'notifyAll' => true
-                    )
+                    ),
+                    true
                 );
 
                 $args = array(
                     'method' => 'POST',
+                    'headers'  => $headers,
                     'body' => $payload,
-                    'timeout' => 45,
-                    'redirection' => '5',
-                    'httpversion' => '1.0',
-                    'blocking' => true,
-                    'headers'  => array(
-                        'Content-type: application/json'
-                    ),
                     'data_format' => 'body',
-                    'cookies' => array(),
+                    'timeout' => 45,
+                    'blocking' => true
                 );
 
                 $response = wp_remote_post($url, $args);
