@@ -1,0 +1,78 @@
+name: Claude PR Description
+
+on:
+  pull_request:
+    branches:
+      - develop
+    types: [opened, reopened]
+
+jobs:
+  claude-pr-description:
+    # Skip if the PR body already has meaningful content (> 150 chars)
+    if: |
+      github.event.pull_request.draft == false &&
+      (github.event.pull_request.body == null ||
+       github.event.pull_request.body == '' ||
+       length(github.event.pull_request.body) < 150)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Generate PR description
+        uses: anthropics/claude-code-action@3ac52d0da9f8ec9ca7b4dc23bb477e36ef9c77a9
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          direct_prompt: |
+            You are a staff frontend engineer writing a GitHub pull request description.
+
+            Analyse every file changed in this PR and write a clear, structured description
+            that will be set as the PR body. Use the template below exactly.
+
+            Rules:
+            - Extract the Jira ticket from the branch name
+              (e.g. `hub-234-my-feature` → ticket is `HUB-234`).
+              If no ticket is found, use `[HUB-XXX]` as a placeholder.
+            - The title line must start with the Jira ticket: `## [HUB-234] Short title`.
+            - "Summary" bullets must explain the *why*, not just list file names.
+            - "Changes in detail" should have one sub-section per logical change group,
+              not one per file.
+            - "Test plan" must list concrete, checkable steps a reviewer can follow,
+              including browser/device coverage where relevant.
+            - Never mention internal file paths in the Summary — save those for
+              "Changes in detail".
+            - Be concise: aim for a description a reviewer can read in under 2 minutes.
+
+            Output ONLY the PR body markdown — no preamble, no explanation.
+
+            ---
+
+            ## [HUB-XXX] <short imperative title>
+
+            ## Summary
+            - <bullet: what changed and why>
+            - <bullet: what changed and why>
+            - <bullet: what changed and why>
+
+            ## Changes in detail
+
+            ### `<logical group name>` (<new|updated|fixed>)
+            <2-4 sentences explaining the change, referencing component/composable names where useful>
+
+            ### `<logical group name>` (<new|updated|fixed>)
+            <2-4 sentences>
+
+            ## Test plan
+            - [ ] <concrete step>
+            - [ ] <concrete step>
+            - [ ] <concrete step>
+
+          update_pr_description: "true"

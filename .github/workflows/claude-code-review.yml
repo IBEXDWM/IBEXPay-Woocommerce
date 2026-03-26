@@ -1,0 +1,43 @@
+name: Claude Auto Review
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@3ac52d0da9f8ec9ca7b4dc23bb477e36ef9c77a9
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Please review this pull request with a focus on:
+            - TypeScript correctness and strict-mode compliance
+            - Vue 3 / Nuxt 3 best practices (Composition API, script setup)
+            - Component design and reusability
+            - Composable patterns and reactivity correctness
+            - Accessibility (a11y) issues
+            - Performance concerns (unnecessary re-renders, large bundle imports)
+            - Security implications (XSS, exposed secrets, unsafe HTML)
+            - Make sure the Jira ticket id is in the PR name and branch name
+            - Use the CLAUDE.md file at the root of the repository for guidelines
+
+            Note: The PR branch is already checked out in the current working directory.
+
+            Use `gh pr comment` for top-level feedback.
+            Use `mcp__github_inline_comment__create_inline_comment` (with `confirmed: true`) to highlight specific code issues.
+            Only post GitHub comments - don't submit review text as messages.
+
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
