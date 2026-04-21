@@ -1,12 +1,22 @@
+## [JIRA-XXX] <short imperative title>
+
 ## Summary
-<!-- What and why -->
+    - <bullet: what changed and why>
+    - <bullet: what changed and why>
+    - <bullet: what changed and why>
 
-## Changes
-- 
+## Changes in detail
 
-## Testing
-- [ ] Unit tests
-- [ ] Manual testing
+### `<logical group name>` (<new|updated|fixed>)
+    <1-2 sentences explaining the change, referencing file/function names where useful>
+
+### `<logical group name>` (<new|updated|fixed>)
+    <1-2 sentences>
+
+## Test plan
+    - [ ] <concrete step>
+    - [ ] <concrete step>
+    - [ ] <concrete step>
 
 ## Related
-<!-- Ticket, dependent PRs -->
+    <!-- Ticket, dependent PRs -->
